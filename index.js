@@ -15,8 +15,8 @@ function handleDeclProp(declaration) {
 }
 
 function handleDeclValue(declaration) {
-  // replace `^imporant` with `!important`
-  if (declaration.value.match(/\=important$/)) {
+  // replace `@imporant` with `!important`
+  if (declaration.value.match(/\@important$/)) {
     declaration.value = declaration.value
       .substring(0, declaration.value.length - 11)
       .trim();
@@ -33,6 +33,9 @@ function handleDeclValue(declaration) {
     /hsl(\(\d+,\s\d+%,\s\d+%,\s\d+\.*\d*\))/,
     'hsla$1'
   );
+
+  // white-space: nowrap -> white-space: no-wrap;
+  declaration.value = declaration.value.replace('nowrap', 'no-wrap');
 }
 
 module.exports = postcss.plugin('propper-css', () => (css) => {

@@ -10,8 +10,17 @@ function translate(source) {
 }
 
 describe('DECLARATION VALUES test', () => {
-  it('replace `=important` with `!important`', () => {
-    const source = `.div { color: red =important; }`;
+  // fix nowrap
+  it('replace `nowrap` with `no-wrap`', () => {
+    const source = `.div { white-space: nowrap; }`;
+    const expected = `.div { white-space: no-wrap; }`;
+    const result = translate(source);
+    expect(result).to.eql(expected);
+  });
+
+  // important
+  it('replace `@important` with `!important`', () => {
+    const source = `.div { color: red @important; }`;
     const expected = `.div { color: red !important; }`;
     const result = translate(source);
     expect(result).to.eql(expected);
