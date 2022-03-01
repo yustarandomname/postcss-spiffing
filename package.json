@@ -1,7 +1,7 @@
 {
-  "name": "postcss-spiffing",
-  "version": "0.1.0",
-  "description": "PostCSS plugin to use British English",
+  "name": "postcss-correction",
+  "version": "0.0.1",
+  "description": "PostCSS plugin to propper CSS",
   "main": "index.js",
   "keywords": [
     "spiffing",

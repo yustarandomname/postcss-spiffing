@@ -1,55 +1,69 @@
-var postcss = require("postcss");
+var postcss = require('postcss');
 
-module.exports = postcss.plugin("postcss-spiffing", function(opts) {
-  return function(css) {
-		css.walkDecls(function(decl) {
-      decl.prop = decl.prop.replace(/colour/g, "color").replace(/photograph/g, "image");
-        if (decl.prop === "font-weight" && decl.value === "plump") {
-          decl.value = "bold";
-        } else if (decl.prop === "transparency") {
-          decl.prop = "opacity";
+function handleDeclProp(declaration) {
+  switch (declaration.prop) {
+    case 'corner-radius':
+      // replace `corner-radius` with `border-radius`
+      declaration.prop = 'border-radius';
+      break;
+    case 'background-blend-mode':
+    case 'mix-blend-mode':
+      // *-blend-mode -> *-blend
+      declaration.prop = declaration.prop.replace(/-blend-mode$/, '-blend');
+      break;
+  }
+}
 
-          if (Number(decl.value) == decl.value && (parseFloat(decl.value) <= 1 && parseFloat(decl.value) >= 0)) {
-            decl.value = (1 - parseFloat(decl.value)).toFixed((Number(decl.value) + "").replace(".", "").length - 1);
-          }
-        } else if (decl.prop === "text-transform" && decl.value === "capitalise") {
-          decl.value = "capitalize";
-        } else if (decl.prop === "storey") {
-          decl.prop = "z-index";
+function handleDeclValue(declaration) {
+  // replace `^imporant` with `!important`
+  if (declaration.value.match(/\=important$/)) {
+    declaration.value = declaration.value
+      .substring(0, declaration.value.length - 11)
+      .trim();
+    declaration.important = true;
+  }
 
-          if (decl.value === "ground") {
-            decl.value = "1";
-          } else {
-            decl.value = Number(decl.value) + 1 + "";
-          }
-        }
+  // rgb and hsl with 4th param -> rgba() and hsla()
+  declaration.value = declaration.value.replace(
+    /rgb(\(\d+,\s\d+,\s\d+,\s\d+\.*\d*\))/,
+    'rgba$1'
+  );
 
-        if (decl.value.match(/!please$/)) {
-          decl.value = decl.value.substring(0, decl.value.length - 7).trim();
-          decl.important = true;
-        }
+  declaration.value = declaration.value.replace(
+    /hsl(\(\d+,\s\d+%,\s\d+%,\s\d+\.*\d*\))/,
+    'hsla$1'
+  );
+}
 
-        if (decl.prop !== "content") {
-          decl.value = decl.value.split(" ").map(function(i) {
-            if (i === "centre") {
-              return "center";
-            }
+module.exports = postcss.plugin('propper-css', () => (css) => {
+  const starRules = new postcss.rule({ selector: '*' });
+  starRules.nodes.push(
+    postcss.decl({ prop: 'box-sizing', value: 'border-box' })
+  );
+  css.root().nodes.push(starRules);
 
-            if (i === "grey") {
-             return "gray";
-            }
+  css.walkDecls((decl) => {
+    decl.value && handleDeclValue(decl);
 
-            return i;
-          }).join(" ");
-        }
+    decl.prop && handleDeclProp(decl);
+  });
 
-        decl.value = decl.value.replace(/(var\(--[^\)]*)colour([^\)]*\))/g, "$1color$2");
-      });
-
-      css.walkAtRules(function(rule) {
-        if (rule.name === "medium") {
-          rule.name = "media";
-        }
-      });
+  css.walkRules((rule) => {
+    // console.log(rule.nodes);
+    if (rule.selector.includes('::placeholder-text')) {
+      rule.selector = rule.selector.replace(
+        '::placeholder-text',
+        '::placeholder'
+      );
+    } else if (rule.selector.includes(':placeholder')) {
+      rule.selector = rule.selector.replace(
+        ':placeholder',
+        ':placeholder-shown'
+      );
     }
+  });
+
+  css.walkAtRules((delc) => {
+    console.log(delc);
+  });
 });
